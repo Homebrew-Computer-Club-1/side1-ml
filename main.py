@@ -91,22 +91,19 @@ class Classification(object):
         return np.array(model.predict(self.X_train))
     
     def ReturnResult_cosine_similarity(self, k=1):
-        
-        #k_users = np.empty((0,k))
         k_users_dict = {}
         for i in range(0, self.X_train.shape[0]):
             distance = [cosine_similarity(self.X_train[i].reshape(1,-1), self.X_train)]
-            
             # i 번째 데이터 포인터와 다른 데이터들 사이의 거리를 작은순으로 정렬한 후 해당 인덱스를 이용해서 가장 가까운 k명의 이용자 선별
             self.distance_idx = np.array(distance).ravel().argsort()
-            #k_users = np.append(k_users, [self.distance_idx[:k]], axis=0)
             
-            distance_value = []
+            google_id = []
             for j in range(0, k):
-                distance_value.append(self.distance_idx[j])
-            k_users_dict[self.df.index[i]] = distance_value
+                google_id.append(self.df.index[self.distance_idx[j]])
+            k_users_dict[self.df.index[i]] = google_id
         
         return k_users_dict
+        
 
 
 class reqBody(BaseModel):
