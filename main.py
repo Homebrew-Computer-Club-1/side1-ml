@@ -17,8 +17,6 @@ app = FastAPI()
 
 # 데이터 전처리
 
-# 데이터 전처리
-
 class DataPreprocessing(object):
 
     def ListToArray(self, row_data): 
@@ -40,7 +38,7 @@ class DataPreprocessing(object):
     def MimMaxScaling(self):
         scaler = MinMaxScaler()
         self.channels = scaler.fit_transform(np.array(self.channels).reshape(-1,1))
-        self.channels = scaled_cha.reshape(-1)
+        self.channels = self.channels.reshape(-1)
         
     def ArrayToDataframe(self):
         self.row_df = pd.DataFrame({'Channels': self.channels, 'Category': self.cate}, index=self.user_id)
@@ -132,7 +130,6 @@ async def root():
 # async def get_data(item: Dataset):
 #     topicId = item.topicDetails
 #     return topicId
-
 
 
 @app.post("/ml/match")
