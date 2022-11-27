@@ -10,14 +10,17 @@ from sklearn.cluster import KMeans
 from numpy import dot
 from numpy.linalg import norm
 from sklearn.metrics.pairwise import cosine_similarity
+from sklearn.preprocessing import MinMaxScaler
 import uvicorn
 
 app = FastAPI()
 
 # 데이터 전처리
 
+# 데이터 전처리
+
 class DataPreprocessing(object):
-   
+
     def ListToArray(self, row_data): 
         self.arr = np.array(row_data)
                                     
@@ -34,6 +37,11 @@ class DataPreprocessing(object):
         for i in range(self.arr.shape[0]):
             self.cate.append(self.arr[i][2:])
     
+    def MimMaxScaling(self):
+        scaler = MinMaxScaler()
+        self.channels = scaler.fit_transform(np.array(self.channels).reshape(-1,1))
+        self.channels = scaled_cha.reshape(-1)
+        
     def ArrayToDataframe(self):
         self.row_df = pd.DataFrame({'Channels': self.channels, 'Category': self.cate}, index=self.user_id)
     
@@ -63,6 +71,8 @@ class DataPreprocessing(object):
 # sklearn의 cosine_similarity 사용
 # 코사인 유사도 계산 시 시간복잡도 문제 해결
 
+from sklearn.metrics.pairwise import cosine_similarity
+
 class Classification(object):
     
     def __init__(self, df_data):
@@ -84,16 +94,22 @@ class Classification(object):
     
     def ReturnResult_cosine_similarity(self, k=1):
         
-        k_users = np.empty((0,k))
+        #k_users = np.empty((0,k))
+        k_users_dict = {}
         for i in range(0, self.X_train.shape[0]):
             distance = [cosine_similarity(self.X_train[i].reshape(1,-1), self.X_train)]
             
             # i 번째 데이터 포인터와 다른 데이터들 사이의 거리를 작은순으로 정렬한 후 해당 인덱스를 이용해서 가장 가까운 k명의 이용자 선별
-            distance_idx = np.array(distance).ravel().argsort()
-            k_users = np.append(k_users, [distance_idx[:k]], axis=0)
-                    
-        return k_users
+            self.distance_idx = np.array(distance).ravel().argsort()
+            #k_users = np.append(k_users, [self.distance_idx[:k]], axis=0)
+            
+            distance_value = []
+            for j in range(0, k):
+                distance_value.append(self.distance_idx[j])
+            k_users_dict[self.df.index[i]] = distance_value
         
+        return k_users_dict
+
 
 class reqBody(BaseModel):
     youtubeSubscriptionData : List[List[str]]
@@ -106,8 +122,6 @@ class reqBody(BaseModel):
 #     etag: str
 #     id: str
 #     topicDetails: channelIds
-
-
 
 
 @app.get("/")
@@ -128,6 +142,7 @@ async def match_making(data: reqBody):
     dt = DataPreprocessing()
     dt.ListToArray(row_data)
     dt.MakeColumns()
+    dt.MimMaxScaling()
     dt.ArrayToDataframe()
     dt.Extraction()
     df = dt.ToDf()
