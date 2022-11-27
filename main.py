@@ -59,14 +59,18 @@ class Classification(object):
                     
         return k_users
 
-class channelIds(BaseModel):
-    topicIds: List[str]
 
-class Dataset(BaseModel):
-    kind: str
-    etag: str
-    id: str
-    topicDetails: channelIds
+class reqBody(BaseModel):
+    youtubeSubscriptionData : List[List[str]]
+
+# class channelIds(BaseModel):
+
+
+# class Dataset(BaseModel):
+#     kind: str
+#     etag: str
+#     id: str
+#     topicDetails: channelIds
 
 
 
@@ -75,26 +79,28 @@ class Dataset(BaseModel):
 async def root():
     return {"message": "Hello World"}
 
-@app.get("/youtube/get-subscription")
-async def get_data(item: Dataset):
-    topicId = item.topicDetails
-    return topicId
+# @app.get("/youtube/get-subscription")
+# async def get_data(item: Dataset):
+#     topicId = item.topicDetails
+#     return topicId
 
 
 
-@app.post("/result/matching")
-async def match_making(data: List[channelIds]):
-    topicId_list = pd.DataFrame(np.array(data))
-    cl = Classification(topicId_list)
-    cl.Extraction()
-    cl.ls
-    train_feature = cl.Ohe()
-    train_feature
-    cl.makeData(train_feature)
-    result = cl.Kmeans()
-    result
-    k_users = cl.ReturnResult_cosine_similarity()
-    return k_users
+@app.post("/ml/match")
+async def match_making(data: reqBody):
+    print(data)
+    # topicId_list = pd.DataFrame(np.array(data))
+    # cl = Classification(topicId_list)
+    # cl.Extraction()
+    # cl.ls
+    # train_feature = cl.Ohe()
+    # train_feature
+    # cl.makeData(train_feature)
+    # result = cl.Kmeans()
+    # result
+    # k_users = cl.ReturnResult_cosine_similarity()
+    # return k_users
 
+    return {"message": "Hello World"}
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
