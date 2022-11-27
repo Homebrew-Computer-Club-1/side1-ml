@@ -13,6 +13,50 @@ import uvicorn
 
 app = FastAPI()
 
+# 데이터 전처리
+
+class DataPreprocessing(object):
+   
+    def ListToArray(self, row_data): 
+        self.arr = np.array(row_data)
+                                    
+    def MakeColumns(self):
+        self.user_id = []
+        for i in range(self.arr.shape[0]):
+            self.user_id.append(self.arr[i][0])
+            
+        self.channels = []
+        for i in range(self.arr.shape[0]):
+            self.channels.append(self.arr[i][1])
+            
+        self.cate = []
+        for i in range(self.arr.shape[0]):
+            self.cate.append(self.arr[i][2:])
+    
+    def ArrayToDataframe(self):
+        self.row_df = pd.DataFrame({'Channels': self.channels, 'Category': self.cate}, index=self.user_id)
+    
+    def Extraction(self):
+        self.category = []
+        
+        for i in range(self.row_df['Category'].shape[0]):
+            np.array(pd.DataFrame(self.row_df['Category'][i]).value_counts()).reshape(1,-1)
+            
+            self.category_series = pd.DataFrame(self.row_df['Category'][i]).value_counts()
+            
+            self.df_category = pd.DataFrame(np.array(self.category_series).reshape(1, -1), 
+                               columns = [j for j in self.category_series.index])
+
+            self.category.append(self.df_category.sort_values(by=0, axis=1).iloc[0, -2:].index.tolist())
+            
+        self.first_category = pd.DataFrame(self.category)[0].str[0]
+        self.second_category = pd.DataFrame(self.category)[1].str[0]
+    
+    def ToDf(self):
+        df = pd.DataFrame({'channels': self.channels, 'first_category': self.first_category.values, 
+                           'second_category': self.second_category.values}, index=self.user_id)
+        
+        return df
 
 class Classification(object):
     
@@ -88,19 +132,19 @@ async def root():
 
 @app.post("/ml/match")
 async def match_making(data: reqBody):
-    print(data)
-    # topicId_list = pd.DataFrame(np.array(data))
-    # cl = Classification(topicId_list)
-    # cl.Extraction()
-    # cl.ls
-    # train_feature = cl.Ohe()
-    # train_feature
-    # cl.makeData(train_feature)
-    # result = cl.Kmeans()
-    # result
-    # k_users = cl.ReturnResult_cosine_similarity()
-    # return k_users
 
+    row_data = data.youtubeSubscriptionData
+    dt = DataPreprocessing()
+    dt.ListToArray(row_data)
+    dt.MakeColumns()
+    dt.ArrayToDataframe()
+    dt.Extraction()
+    df = dt.ToDf()
+    cl = Classification(df)
+    cl.Ohe(df)
+    cl.makeData(dt.channels)
+    k_users = cl.ReturnResult_cosine_similarity()
+    
     return {"message": "Hello World"}
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
