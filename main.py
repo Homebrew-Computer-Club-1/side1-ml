@@ -1,6 +1,7 @@
 from typing import List
 from fastapi import FastAPI
 from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 import numpy as np
 import pandas as pd
@@ -14,6 +15,17 @@ from sklearn.preprocessing import MinMaxScaler
 import uvicorn
 
 app = FastAPI()
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 데이터 전처리
 
@@ -144,7 +156,8 @@ async def match_making(data: reqBody):
     cl.Ohe(df)
     cl.makeData(dt.channels)
     k_users = cl.ReturnResult_cosine_similarity()
-    
-    return {"message": "Hello World"}
+    print(k_users)
+
+    return k_users
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="127.0.0.1", port=5000)
