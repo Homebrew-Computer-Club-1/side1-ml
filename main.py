@@ -102,7 +102,7 @@ class Classification(object):
         model.fit(self.X_train)
         return np.array(model.predict(self.X_train))
     
-    def ReturnResult_cosine_similarity(self, k=1):
+    def ReturnResult_cosine_similarity(self, k=2):
         k_users_dict = {}
         for i in range(0, self.X_train.shape[0]):
             distance = [cosine_similarity(self.X_train[i].reshape(1,-1), self.X_train)]
